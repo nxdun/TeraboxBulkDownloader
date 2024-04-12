@@ -47,6 +47,7 @@ downloadFile(directLink, outputFilePath)
             if (err) throw err;
         });
         //re request
+        console.log(`RE REQUEST : ${u}`);
         const reqData2 = require("./fetchDatav2");
         reqData2(u, process.env.API1);
 

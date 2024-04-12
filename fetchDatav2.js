@@ -15,11 +15,11 @@ async function reqData2(url, api_url) {
         console.log(`GET: https://${api_url}/api?data="${url}"`);
 
         const response = await axios.get(`https://${api_url}/api?data=${url}`);
-        console.log(`RESPONSE: (file_name) ${response.data.file_name}`);
+        console.log(`RESPONSE2: (file_name) ${response.data.file_name}`);
 
         //fetch link, not direct_link
         const link = response.data.link;
-        const name = `${randomLetter}${response.data.file_name}`;
+        const name = `reqdata2:${randomLetter}${response.data.file_name}`;
 
         console.log('Downloading file...');
         await downloadFile(link, name, url);
@@ -29,10 +29,10 @@ async function reqData2(url, api_url) {
         try {
             console.log("re-request initialized");
             const response = await axios.get(`https://${process.env.API1}/api?data=${url}`);
-            console.log(`RESPONSE: (file_name) ${response.data.file_name}`);
+            console.log(`RESPONSE2: (file_name) ${response.data.file_name}`);
 
             const link = response.data.direct_link;
-            const name = response.data.file_name;
+            const name = `reqdata2:catch:${randomLetter}${response.data.file_name}`;
 
             console.log('RE:Downloading file...');
             await downloadFile(link, name, url);

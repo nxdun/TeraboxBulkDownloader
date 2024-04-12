@@ -9,7 +9,8 @@ require("dotenv").config();
 const downloadFile = require('./downloadHere');
 
 async function reqData(url, api_url) {
-
+    //generate a random letter
+    const randomLetter = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
     try {
         console.log(`GET: https://${api_url}/api?data="${url}"`);
 
@@ -17,7 +18,7 @@ async function reqData(url, api_url) {
         console.log(`RESPONSE: (file_name) ${response.data.file_name}`);
 
         const link = response.data.direct_link;
-        const name = response.data.file_name;
+        const name = `${randomLetter}${response.data.file_name}`;
 
         console.log('Downloading file...');
         await downloadFile(link, name, url);

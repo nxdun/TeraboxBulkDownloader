@@ -8,6 +8,7 @@ const path = require("path");
 require("dotenv").config();
 const download = require("./archiveAndSend");
 const fs = require("fs");
+const clearZips = require("./clearZips");
 
 app.use(bp.json());
 app.get("/", async (req, res) => {
@@ -18,7 +19,7 @@ app.get("/", async (req, res) => {
     return;
   }
   console.log("teraboxLink : ", teraboxLink);
-  reqData(teraboxLink, process.env.API1);
+  reqData(teraboxLink, process.env.API1, res);
   //wait untill response fetched
   console.log("File Submitted to download");
   res.send("File Submitted to download");
@@ -41,23 +42,11 @@ app.get("/ping", async (req, res) => {
 
 app.get("/download", async (req, res) => {
     //creates download pipeline
-    download(res);1
+    download(res);
 });
 
 app.get("/del", async (req, res) => {
-//delete zip files in project directory
-  fs.readdir(__dirname, (err, files) => {
-    if (err) throw err;
-
-    for (const file of files) {
-      if (file.endsWith(".zip")) {
-        fs.unlink(path.join(__dirname, file), (err) => {
-          if (err) throw err;
-        });
-      }
-    }
-  });
-  res.send("All zip files deleted");
+  clearZips(res, 1);
 });
 
 app.get("/deldown", async (req, res) => {
@@ -90,7 +79,7 @@ app.get("/multi", async (req, res) => {
   teraboxLinks.forEach((link) => {
     const currentAPI = apis[apiIndex];
     console.log(`Requesting to API : link ${link}- ${currentAPI}`);
-    reqData(link, currentAPI);
+    reqData(link, currentAPI, res);
     apiIndex++;
     if (apiIndex >= apis.length) {
       apiIndex = 0;
