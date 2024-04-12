@@ -65,6 +65,29 @@ app.get("/deldown", async (req, res) => {
 
 app.get("/multi", async (req, res) => {
   let teraboxLinks = req.query.url.split(",");
+  let counter = 0;
+  res.write(`
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Thumbnails</title>
+  </head>
+  <body>`);
+  const urlCount = teraboxLinks.length;
+
+  let callback = () => {
+    //get query url count
+    counter++;
+
+    if (counter === urlCount) {
+      //set headers
+      res.header("Content-Type", "text/html");
+      res.write(`</body></html>`);
+      res.end();
+  }
+};
 
   if (!teraboxLinks) {
     res.send("Please provide a url");
@@ -79,13 +102,12 @@ app.get("/multi", async (req, res) => {
   teraboxLinks.forEach((link) => {
     const currentAPI = apis[apiIndex];
     console.log(`Requesting to API : link ${link}- ${currentAPI}`);
-    reqData(link, currentAPI, res);
+    reqData(link, currentAPI, res, callback);
     apiIndex++;
     if (apiIndex >= apis.length) {
       apiIndex = 0;
     }
   });
-  res.send("All Files Submitted to download  :}");
 });
 
 app.get("*", async (req, res) => {
