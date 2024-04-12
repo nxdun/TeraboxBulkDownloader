@@ -12,6 +12,11 @@ const fs = require("fs");
 app.use(bp.json());
 app.get("/", async (req, res) => {
   let teraboxLink = req.query.url;
+  //if url is not provided
+  if (!teraboxLink) {
+    res.send("Please provide a url");
+    return;
+  }
   console.log("teraboxLink : ", teraboxLink);
   reqData(teraboxLink, process.env.API1);
   //wait untill response fetched
@@ -21,7 +26,17 @@ app.get("/", async (req, res) => {
 
 //check server is alive
 app.get("/ping", async (req, res) => {
-  res.send("pong");
+    let eventLoopIsEmpty = true;
+
+    // Check if the event loop is empty using setImmediate
+    await new Promise(resolve => setImmediate(resolve));
+    eventLoopIsEmpty = false;
+
+    const serverStatus = {
+        server: 'Express Server',
+        status: eventLoopIsEmpty ? 'Idle' : 'Busy'
+    };
+    res.json(serverStatus);
 });
 
 app.get("/download", async (req, res) => {
@@ -61,6 +76,12 @@ app.get("/deldown", async (req, res) => {
 
 app.get("/multi", async (req, res) => {
   let teraboxLinks = req.query.url.split(",");
+
+  if (!teraboxLinks) {
+    res.send("Please provide a url");
+    return;
+  }
+
   console.log("teraboxLink : ", teraboxLinks);
   let apis = [process.env.API1, process.env.API2];
   let apiIndex = 0; // Initialized the API index to 0
@@ -76,6 +97,10 @@ app.get("/multi", async (req, res) => {
     }
   });
   res.send("All Files Submitted to download  :}");
+});
+
+app.get("*", async (req, res) => {
+  res.send("wtf are you doing");
 });
 
 app.listen(port, () => {
