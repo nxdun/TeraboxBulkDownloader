@@ -6,11 +6,14 @@ const bp = require('body-parser');
 const reqData = require('./fetchData');
 
 app.use(bp.json());
-app.get('/', (req, res) => {
-    let url = req.body.url;
-    reqData(req, res, url);
+app.get('/',async  (req, res) => {
+    let url = req.query.url;
+    console.log('URL : ', url);
+    reqData(url);
+    //wait untill response fetched
+    console.log('File Submitted to download');
+    res.send('File Submitted to download');
 
-    
 });
 
 
