@@ -26,14 +26,17 @@ async function downloadFile(url, outputPath) {
 
 const letDownload = (directLink, fileName) => {
 
-const outputFilePath = path.join(__dirname, fileName);
+const outputFilePath = path.join(__dirname, "/downloads/",fileName);
 console.log('Downloading file to: ', outputFilePath);
 downloadFile(directLink, outputFilePath)
     .then(() => {
-        console.log('DONE : File downloaded successfully');
+        console.log(`DONE : ${fileName} downloaded successfully`);
     })
     .catch(error => {
-        console.error('Error downloading file:', error);
+        console.error(`Error downloading file: ${fileName}`);
+        fs.appendFile('errorDownload.txt', `ERROR : (downloading file) URL : ${directLink}, FILE : ${fileName}\n`, (err) => {
+            if (err) throw err;
+        });
     });
 }
 
