@@ -1,8 +1,9 @@
 const axios = require('axios');
 const fs = require('fs');
 const path = require('path');
-
-
+require("dotenv").config();
+//rerequest counter
+let u = 0;
 // Function to download a file using a direct link
 async function downloadFile(url, outputPath) {
     const writer = fs.createWriteStream(outputPath);
@@ -24,10 +25,12 @@ async function downloadFile(url, outputPath) {
     });
 }
 
-const letDownload = (directLink, fileName) => {
+const letDownload = (directLink, fileName, u) => {
 
 const outputFilePath = path.join(__dirname, "/downloads/",fileName);
 console.log('Downloading file to: ', outputFilePath);
+
+
 downloadFile(directLink, outputFilePath)
     .then(() => {
         console.log(`DONE : ${fileName} downloaded successfully`);
@@ -35,12 +38,18 @@ downloadFile(directLink, outputFilePath)
     .catch(error => {
         console.error(`Error downloading file: ${fileName}`);
         //delete file if error occurs
+        fs.appendFile('errorDownload.txt', `ERROR : ,URL ${u} rereq proceed`, (err) => {
+            
+            if (err) throw err;
+        });
+        console.log(`...re request initiated : ${process.env.API1} x ${u}`);
         fs.unlink(outputFilePath, (err) => {
             if (err) throw err;
         });
-        fs.appendFile('errorDownload.txt', `ERROR : , FILE : ${fileName}\n (downloading file) URL : ${directLink}`, (err) => {
-            if (err) throw err;
-        });
+        //re request
+        const reqData2 = require("./fetchDatav2");
+        reqData2(u, process.env.API1);
+
     });
 }
 

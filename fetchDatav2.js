@@ -8,16 +8,18 @@ const axios = require('axios');
 require("dotenv").config();
 const downloadFile = require('./downloadHere');
 
-async function reqData(url, api_url) {
-
+async function reqData2(url, api_url) {
+    //generate a random letter
+    const randomLetter = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
     try {
         console.log(`GET: https://${api_url}/api?data="${url}"`);
 
         const response = await axios.get(`https://${api_url}/api?data=${url}`);
         console.log(`RESPONSE: (file_name) ${response.data.file_name}`);
 
-        const link = response.data.direct_link;
-        const name = response.data.file_name;
+        //fetch link, not direct_link
+        const link = response.data.link;
+        const name = `${randomLetter}${response.data.file_name}`;
 
         console.log('Downloading file...');
         await downloadFile(link, name, url);
@@ -47,4 +49,4 @@ async function reqData(url, api_url) {
     }
 }
 
-module.exports = reqData;
+module.exports = reqData2;
