@@ -34,7 +34,11 @@ downloadFile(directLink, outputFilePath)
     })
     .catch(error => {
         console.error(`Error downloading file: ${fileName}`);
-        fs.appendFile('errorDownload.txt', `ERROR : (downloading file) URL : ${directLink}, FILE : ${fileName}\n`, (err) => {
+        //delete file if error occurs
+        fs.unlink(outputFilePath, (err) => {
+            if (err) throw err;
+        });
+        fs.appendFile('errorDownload.txt', `ERROR : , FILE : ${fileName}\n (downloading file) URL : ${directLink}`, (err) => {
             if (err) throw err;
         });
     });
