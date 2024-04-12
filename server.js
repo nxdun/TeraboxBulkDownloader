@@ -7,6 +7,7 @@ const reqData = require("./fetchData");
 const path = require("path");
 require("dotenv").config();
 const download = require("./archiveAndSend");
+const fs = require("fs");
 
 app.use(bp.json());
 app.get("/", async (req, res) => {
@@ -30,7 +31,6 @@ app.get("/download", async (req, res) => {
 
 app.get("/del", async (req, res) => {
 //delete zip files in project directory
-  const fs = require("fs");
   fs.readdir(__dirname, (err, files) => {
     if (err) throw err;
 
@@ -44,6 +44,20 @@ app.get("/del", async (req, res) => {
   });
   res.send("All zip files deleted");
 });
+
+app.get("/deldown", async (req, res) => {
+    //delete contents in download folder
+    fs.readdir(path.join(__dirname, "downloads"), (err, files) => {
+        if (err) throw err;
+    
+        for (const file of files) {
+            fs.unlink(path.join(__dirname, "downloads", file), (err) => {
+                if (err) throw err;
+            });
+        }
+    });
+    res.send("All files in download folder deleted");
+    });
 
 app.get("/multi", async (req, res) => {
   let teraboxLinks = req.query.url.split(",");
