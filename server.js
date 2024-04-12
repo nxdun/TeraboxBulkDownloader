@@ -4,7 +4,9 @@ const app = express();
 const port = 3000;
 const bp = require("body-parser");
 const reqData = require("./fetchData");
+const path = require("path");
 require("dotenv").config();
+const download = require("./archiveAndSend");
 
 app.use(bp.json());
 app.get("/", async (req, res) => {
@@ -14,6 +16,33 @@ app.get("/", async (req, res) => {
   //wait untill response fetched
   console.log("File Submitted to download");
   res.send("File Submitted to download");
+});
+
+//check server is alive
+app.get("/ping", async (req, res) => {
+  res.send("pong");
+});
+
+app.get("/download", async (req, res) => {
+    //creates download pipeline
+    download(res);1
+});
+
+app.get("/del", async (req, res) => {
+//delete zip files in project directory
+  const fs = require("fs");
+  fs.readdir(__dirname, (err, files) => {
+    if (err) throw err;
+
+    for (const file of files) {
+      if (file.endsWith(".zip")) {
+        fs.unlink(path.join(__dirname, file), (err) => {
+          if (err) throw err;
+        });
+      }
+    }
+  });
+  res.send("All zip files deleted");
 });
 
 app.get("/multi", async (req, res) => {
