@@ -10,7 +10,6 @@ errorDownload.txt
 errorFetch.txt
 *.zip
 # package lock
-package-lock.json
 # down folder
 /downloads
 .mp4
