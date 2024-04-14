@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 require("dotenv").config();
 const readline = require("readline");
-
+let bool = true;
 // Function to download a file using a direct link
 async function downloadFile(url, outputPath) {
     const writer = fs.createWriteStream(outputPath);
@@ -63,18 +63,17 @@ async function downloadFile(url, outputPath) {
 
 const letDownload = (directLink, fileName, u) => {
     const outputFilePath = path.join(__dirname, "..", "..", "downloads", fileName);
-    console.log(`!!!!!!!!!!!!output file path ${outputFilePath}`)
-    console.log("Downloading file to: ", outputFilePath);
+    console.log(">>Downloading file to: ", outputFilePath);
 
     downloadFile(directLink, outputFilePath)
         .then(() => {
-            console.log(`DONE : ${fileName} downloaded successfully`);
+            console.log(`   >>DONE : ${fileName} downloaded successfully`);
         })
         .catch((error) => {
             console.error(`Error downloading file: ${fileName}`);
 
             // Log error and initiate re-request
-            console.log(`...re-request initiated: ${process.env.API1} x ${u}`);
+            console.log(`ERR:re-request initiated: ${process.env.API1} x ${u}`);
             fs.appendFile(
                 "errorDownload.txt",
                 `${u},  error ${error}`,
@@ -82,13 +81,18 @@ const letDownload = (directLink, fileName, u) => {
                     if (err) console.error(`Error writing to file: ${err}`);
                 }
             );
+            //delete created file
             fs.unlink(outputFilePath, (err) => {
                 if (err) console.error(`Error deleting file: ${err}`);
             });
             console.log(`RE REQUEST: ${u}`);
-            // Looping unlimitedly
-            // const reqData = require("./fetchData");
-            // reqData(u, process.env.API2);
+
+            //recall the function for 1 retry
+
+            if (bool) {
+                letDownload(directLink, `re${fileName}` , u);
+                bool = false;
+            }
         });
 };
 
