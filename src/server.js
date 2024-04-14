@@ -3,12 +3,13 @@ const express = require("express");
 const app = express();
 const port = 3000;
 const bp = require("body-parser");
-const reqData = require("./fetchData");
+const reqData = require("./utils/fetchData");
 const path = require("path");
 require("dotenv").config();
-const download = require("./archiveAndSend");
+const download = require("./utils/archiveAndSend");
 const fs = require("fs");
-const clearZips = require("./clearZips");
+const clearZips = require("./utils/clearZips");
+const emitter = require("events").EventEmitter.defaultMaxListeners = 20;
 
 app.use(bp.json());
 app.get("/", async (req, res) => {
@@ -24,6 +25,41 @@ app.get("/", async (req, res) => {
   console.log("File Submitted to download");
   res.send("File Submitted to download");
 });
+
+app.get("/u", async (req, res) => {
+  console.log("uuuuuuuuuu");
+  const axios = require("axios");
+  let teraboxLink = req.query.url;
+  //if url is not provided
+  if (!teraboxLink) {
+    res.send("Please provide a url");
+    return;
+  }
+  res.send("recived")
+  teraboxLink = teraboxLink.split(",");
+  
+  try {
+    const promises = teraboxLink.map((link) => {
+      return axios.get(`https://${process.env.API1}/api?data=${link}`);
+    });
+
+    const responses = await Promise.all(promises);
+    
+    responses.forEach((response) => {
+      let counter = 0;
+      console.log("done : ", counter++);
+      //write all responses to a text file
+      fs.appendFile(`url.txt`, `${response.data.direct_link}\n`, (err) => {
+        if (err) throw err;
+      });
+    });
+    
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
 
 //check server is alive
 app.get("/ping", async (req, res) => {
@@ -50,18 +86,38 @@ app.get("/del", async (req, res) => {
 });
 
 app.get("/deldown", async (req, res) => {
-    //delete contents in download folder
-    fs.readdir(path.join(__dirname, "downloads"), (err, files) => {
-        if (err) throw err;
-    
-        for (const file of files) {
-            fs.unlink(path.join(__dirname, "downloads", file), (err) => {
-                if (err) throw err;
-            });
-        }
-    });
-    res.send("All files in download folder deleted");
-    });
+  try {
+      const downloadFolderPath = path.join(__dirname, '..', 'downloads');
+      
+      // Read contents of the downloads folder
+      fs.readdir(downloadFolderPath, (err, files) => {
+          if (err) {
+              console.error(`Error reading directory: ${err}`);
+              throw err;
+          }
+          
+          // Iterate through each file and delete it asynchronously
+          files.forEach((file) => {
+              const filePath = path.join(downloadFolderPath, file);
+              
+              // Delete each file asynchronously
+              fs.unlink(filePath, (err) => {
+                  if (err) {
+                      console.error(`Error deleting file ${filePath}: ${err}`);
+                      throw err;
+                  }
+                  console.log(`Deleted file: ${filePath}`);
+              });
+          });
+          
+          // Send response after all files are deleted
+          res.send("All files in download folder deleted");
+      });
+  } catch (error) {
+      console.error(`Error deleting files: ${error}`);
+      res.status(500).send("Error deleting files");
+  }
+});
 
 app.get("/multi", async (req, res) => {
   let teraboxLinks = req.query.url.split(",");
@@ -72,7 +128,7 @@ app.get("/multi", async (req, res) => {
   <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Thumbnails</title>
+      <title>Pls wait..</title>
   </head>
   <body>`);
   const urlCount = teraboxLinks.length;
@@ -85,6 +141,7 @@ app.get("/multi", async (req, res) => {
       //set headers
       res.header("Content-Type", "text/html");
       res.write(`</body></html>`);
+      res.send();
       res.end();
   }
 };

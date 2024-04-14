@@ -16,7 +16,7 @@ package-lock.json
 .mp4
 .mkv
 .jpg
-
+temp
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 

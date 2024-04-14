@@ -19,12 +19,12 @@ async function reqData2(url, api_url) {
 
         //fetch link, not direct_link
         const link = response.data.link;
-        const name = `reqdata2:${randomLetter}${response.data.file_name}`;
+        const name = `${randomLetter}${response.data.file_name}`;
 
         console.log('Downloading file...');
         await downloadFile(link, name, url);
     } catch (error) {
-        console.log(`ERROR: (axios get) URL: ${url}, API: ${api_url}`);
+        console.log(`ERROR:reqData2 (axios get) URL: ${url}, API: ${api_url}`);
 
         try {
             console.log("re-request initialized");
@@ -32,18 +32,18 @@ async function reqData2(url, api_url) {
             console.log(`RESPONSE2: (file_name) ${response.data.file_name}`);
 
             const link = response.data.direct_link;
-            const name = `reqdata2:catch:${randomLetter}${response.data.file_name}`;
+            const name = `${randomLetter}${response.data.file_name}`;
 
             console.log('RE:Downloading file...');
             await downloadFile(link, name, url);
         } catch (reError) {
-            console.log(`ERROR: RE:(axios get) URL: ${url || "none"}, API: ${api_url}`);
+            console.log(`ERROR:reqData2 RE:(axios get) URL: ${url || "none"}, API: ${api_url}`);
             fs.appendFile('errorFetch.txt', `ERROR: RE:(axios get) URL: ${url || "none"}, API: ${api_url}\n`, (err) => {
                 if (err) throw err;
             });
         }
 
-        fs.appendFile('errorFetch.txt', `ERROR: (axios get) URL: ${url}, API: ${api_url}\n`, (err) => {
+        fs.appendFile('errorFetch.txt', `ERROR:reqData2 (axios get) URL: ${url}, API: ${api_url}\n`, (err) => {
             if (err) throw err;
         });
     }

@@ -3,7 +3,7 @@ const path = require("path");
 
 const clearZips = (res, bool) => {
   //delete zip files in project directory
-  fs.readdir(__dirname, (err, files) => {
+  fs.readdir(`${__dirname}`, (err, files) => {
     if (err) throw err;
 
     for (const file of files) {
