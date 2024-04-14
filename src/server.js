@@ -27,7 +27,7 @@ app.get("/", async (req, res) => {
 });
 
 app.get("/u", async (req, res) => {
-  console.log("uuuuuuuuuu");
+  console.log("link fetch request recived");
   const axios = require("axios");
   let teraboxLink = req.query.url;
   //if url is not provided
@@ -47,7 +47,12 @@ app.get("/u", async (req, res) => {
     
     responses.forEach((response) => {
       let counter = 0;
-      console.log("done : ", counter++);
+      console.log("fetched\t>",response.data.file_name);
+      //clear previous file content in url.txt
+      fs.writeFile(`url.txt`, "", (err) => {
+        if (err) throw err;
+      });
+      
       //write all responses to a text file
       fs.appendFile(`url.txt`, `${response.data.direct_link}\n`, (err) => {
         if (err) throw err;
