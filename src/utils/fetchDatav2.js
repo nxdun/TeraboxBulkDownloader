@@ -60,6 +60,7 @@ class DataRequest {
             });
 
             // Download completed, send completion message
+            res.write('</body></html>');
             res.end('\nDownload complete!');
         } catch (error) {
             console.error(`Error occurred during request: ${error}`);
