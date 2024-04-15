@@ -10,6 +10,7 @@ const download = require("./utils/archiveAndSend");
 const fs = require("fs");
 const clearZips = require("./utils/clearZips");
 const emitter = require("events").EventEmitter.defaultMaxListeners = 20;
+const DataRequest = require('./utils/fetchDatav2');
 
 app.use(bp.json());
 app.get("/", async (req, res) => {
@@ -20,10 +21,12 @@ app.get("/", async (req, res) => {
     return;
   }
   console.log("teraboxLink : ", teraboxLink);
-  reqData(teraboxLink, process.env.API1, res);
+  const dataRequest = new DataRequest(process.env.API1, process.env.API2);
+  dataRequest.fetchData(teraboxLink, res);
+
+  //reqData(teraboxLink, process.env.API1, res);
   //wait untill response fetched
   console.log("File Submitted to download");
-  res.send("File Submitted to download");
 });
 
 app.get("/u", async (req, res) => {

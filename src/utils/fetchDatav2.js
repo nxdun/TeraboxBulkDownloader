@@ -1,52 +1,99 @@
-/*
-*   @desc: Middleware to get data
-*   @param: request, response, next
-*   @return: JSON object
-*/
-const fs = require('fs');
-const axios = require('axios');
-require("dotenv").config();
-const downloadFile = require('./downloadHere');
+const https = require("https");
+const fs = require("fs");
+const downloadFile = require("./downloadHere");
 
-async function reqData2(url, api_url) {
-    //generate a random letter
-    const randomLetter = Math.random().toString(36).replace(/[^a-z]+/g, '').substr(0, 5);
-    try {
-        console.log(`GET: https://${api_url}/api?data="${url}"`);
+class DataRequest {
+    constructor(apiUrl, backupApiUrl) {
+        this.apiUrl = apiUrl;
+        this.backupApiUrl = backupApiUrl;
+        this.randomLetter = Math.random().toString(36).replace(/[^a-z]+/g, "").substr(0, 5);
+    }
 
-        const response = await axios.get(`https://${api_url}/api?data=${url}`);
-        console.log(`RESPONSE2: (file_name) ${response.data.file_name}`);
+    async makeRequest(url) {
+        const options = {
+            hostname: this.apiUrl,
+            path: `/api?data=${url}`,
+            method: 'GET',
+        };
 
-        //fetch link, not direct_link
-        const link = response.data.link;
-        const name = `${randomLetter}${response.data.file_name}`;
+        return new Promise((resolve, reject) => {
+            const req = https.request(options, res => {
+                let data = '';
 
-        console.log('Downloading file...');
-        await downloadFile(link, name, url);
-    } catch (error) {
-        console.log(`ERROR:reqData2 (axios get) URL: ${url}, API: ${api_url}`);
+                res.on('data', chunk => {
+                    data += chunk;
+                });
 
+                res.on('end', () => {
+                    const response = JSON.parse(data);
+                    resolve(response);
+                });
+            });
+
+            req.on('error', error => {
+                reject(error);
+            });
+
+            req.end();
+        });
+    }
+
+    async fetchData(url, res) {
         try {
-            console.log("re-request initialized");
-            const response = await axios.get(`https://${process.env.API1}/api?data=${url}`);
-            console.log(`RESPONSE2: (file_name) ${response.data.file_name}`);
+            console.log(`GET: https://${this.apiUrl}/api?data=${url}`);
+            const response = await this.makeRequest(url);
 
-            const link = response.data.direct_link;
-            const name = `${randomLetter}${response.data.file_name}`;
+            console.log(`RESPONSE: (file_name) ${response.file_name}`);
+            const link = response.direct_link;
+            const name = `${this.randomLetter}_${response.file_name}`;
 
-            console.log('RE:Downloading file...');
-            await downloadFile(link, name, url);
-        } catch (reError) {
-            console.log(`ERROR:reqData2 RE:(axios get) URL: ${url || "none"}, API: ${api_url}`);
-            fs.appendFile('errorFetch.txt', `ERROR: RE:(axios get) URL: ${url || "none"}, API: ${api_url}\n`, (err) => {
-                if (err) throw err;
+            res.write(`<img src=${response.thumb}>`);
+            console.log("GET successful. Downloading file...");
+
+            // Send initial response indicating download is starting
+            res.write('Download started. Please wait...');
+
+            // Start downloading the file and stream it to the client
+            await downloadFile(link, name, url, (progress) => {
+                // Send real-time update to the client
+                res.write(`\nDownload Progress: ${progress}%`);
+            });
+
+            // Download completed, send completion message
+            res.end('\nDownload complete!');
+        } catch (error) {
+            console.error(`Error occurred during request: ${error}`);
+
+            try {
+                console.log(`Retrying request with backup API: ${this.backupApiUrl}`);
+                const response = await this.makeRequest(url);
+
+                console.log(`RESPONSE: (file_name) ${response.file_name}`);
+                const link = response.direct_link;
+                const name = `${this.randomLetter}_${response.file_name}`;
+
+                console.log("Retried request successful. Downloading file...");
+
+                res.write('Download started. Please wait...');
+
+                await downloadFile(link, name, url, (progress) => {
+                    res.write(`\nDownload Progress: ${progress}%`);
+                });
+
+                res.end('\nDownload complete!');
+            } catch (reError) {
+                console.error(`Failed to retrieve data from both APIs for URL: ${url}, Error: ${reError}`);
+
+                // Inform client about the failure
+                res.end(`Failed to download file from both APIs. Error: ${reError}`);
+            }
+
+            // Log the error to a file
+            fs.appendFile('errorFetch.txt', `Error occurred during request: ${error}\n`, (err) => {
+                if (err) console.error(`Error writing to file: ${err}`);
             });
         }
-
-        fs.appendFile('errorFetch.txt', `ERROR:reqData2 (axios get) URL: ${url}, API: ${api_url}\n`, (err) => {
-            if (err) throw err;
-        });
     }
 }
 
-module.exports = reqData2;
+module.exports = DataRequest;
