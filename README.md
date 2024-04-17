@@ -4,7 +4,14 @@
 - ⭐ A Backend Download Manager - Parrarel, Mulit Chunks, Fast
 - ⭐ Local FTP - quick file transfer using same api
 - Heavy Link fault tolerance, Logs failed actions with links, Backup Fetching Algorithm, Seperate endpoints for deleting archives/current downloads
+## roadmap
 
+- [ ] add folder downloading option
+- [ ] add database retrival mechanism with faster flow
+- [ ] writ2 api documentation
+- [ ] adding intergration test
+- [ ] automate workflow
+      
 ## ENV init
 
 - to add several apis to enviroment variables 
